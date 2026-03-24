@@ -1,14 +1,18 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { menus } from "@/db/schema";
-import { eq, asc } from "drizzle-orm";
+import { asc, sql } from "drizzle-orm";
 
 export async function GET() {
   try {
+    // SQLite stores booleans as 0/1 integers.
+    // eq(menus.isActive, true) can produce "is_active = true" which some
+    // SQLite drivers do not evaluate correctly. Use a raw SQL fragment
+    // to ensure the comparison is against the integer literal 1.
     const allMenus = await db
       .select()
       .from(menus)
-      .where(eq(menus.isActive, true))
+      .where(sql`${menus.isActive} = 1`)
       .orderBy(asc(menus.sortOrder));
 
     return NextResponse.json(
