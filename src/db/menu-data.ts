@@ -1,8 +1,10 @@
 import type { NewMenu, NewSchedule } from "./schema";
 
-export const menuSeedData: Omit<NewMenu, "id" | "isActive" | "createdAt" | "updatedAt">[] = [
+// 固定IDを使用することで、Lambda間でも同一のメニューIDが参照可能になる
+export const menuSeedData: Omit<NewMenu, "isActive" | "createdAt" | "updatedAt">[] = [
   // 鍼灸
   {
+    id: "menu-acupuncture-hari-0001",
     category: "acupuncture",
     name: "はり治療",
     description:
@@ -13,6 +15,7 @@ export const menuSeedData: Omit<NewMenu, "id" | "isActive" | "createdAt" | "upda
     sortOrder: 1,
   },
   {
+    id: "menu-acupuncture-okyu-0002",
     category: "acupuncture",
     name: "お灸治療",
     description:
@@ -23,6 +26,7 @@ export const menuSeedData: Omit<NewMenu, "id" | "isActive" | "createdAt" | "upda
     sortOrder: 2,
   },
   {
+    id: "menu-acupuncture-sogo-0003",
     category: "acupuncture",
     name: "鍼灸総合コース",
     description:
@@ -33,6 +37,7 @@ export const menuSeedData: Omit<NewMenu, "id" | "isActive" | "createdAt" | "upda
     sortOrder: 3,
   },
   {
+    id: "menu-acupuncture-biyou-0004",
     category: "acupuncture",
     name: "美容鍼",
     description:
@@ -44,6 +49,7 @@ export const menuSeedData: Omit<NewMenu, "id" | "isActive" | "createdAt" | "upda
   },
   // 整体
   {
+    id: "menu-chiropractic-kotsub-0005",
     category: "chiropractic",
     name: "骨盤矯正",
     description:
@@ -54,6 +60,7 @@ export const menuSeedData: Omit<NewMenu, "id" | "isActive" | "createdAt" | "upda
     sortOrder: 5,
   },
   {
+    id: "menu-chiropractic-shisei-0006",
     category: "chiropractic",
     name: "姿勢改善コース",
     description:
@@ -64,6 +71,7 @@ export const menuSeedData: Omit<NewMenu, "id" | "isActive" | "createdAt" | "upda
     sortOrder: 6,
   },
   {
+    id: "menu-chiropractic-sango-0007",
     category: "chiropractic",
     name: "産後骨盤ケア",
     description:
@@ -75,6 +83,7 @@ export const menuSeedData: Omit<NewMenu, "id" | "isActive" | "createdAt" | "upda
   },
   // マッサージ
   {
+    id: "menu-massage-zenshin30-0008",
     category: "massage",
     name: "全身マッサージ 30分",
     description: "全身をほぐす30分のショートコース。お時間のない方にもおすすめです。",
@@ -84,6 +93,7 @@ export const menuSeedData: Omit<NewMenu, "id" | "isActive" | "createdAt" | "upda
     sortOrder: 8,
   },
   {
+    id: "menu-massage-zenshin60-0009",
     category: "massage",
     name: "全身マッサージ 60分",
     description:
@@ -94,6 +104,7 @@ export const menuSeedData: Omit<NewMenu, "id" | "isActive" | "createdAt" | "upda
     sortOrder: 9,
   },
   {
+    id: "menu-massage-katakubi-0010",
     category: "massage",
     name: "肩・首集中ケア",
     description:
@@ -104,6 +115,7 @@ export const menuSeedData: Omit<NewMenu, "id" | "isActive" | "createdAt" | "upda
     sortOrder: 10,
   },
   {
+    id: "menu-massage-foot-0011",
     category: "massage",
     name: "フットケア",
     description:
