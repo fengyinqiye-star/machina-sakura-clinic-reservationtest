@@ -5,7 +5,11 @@ import StepMenu from "@/components/organisms/ReservationForm/StepMenu";
 import type { Menu } from "@/db/schema";
 
 // =============================================================================
-// StepMenu Component Tests (Regression target: modified component)
+// StepMenu Component Tests — revision-003 regression tests
+//
+// The component was changed from a 2-step category→menu UI to a single-screen
+// grouped layout. On fetch failure / empty response it falls back to static
+// FALLBACK_MENUS and shows a warning banner (no error screen).
 // =============================================================================
 
 const mockMenus: Menu[] = [
@@ -92,6 +96,9 @@ describe("StepMenu", () => {
     vi.unstubAllGlobals();
   });
 
+  // ---------------------------------------------------------------------------
+  // 1. Loading state
+  // ---------------------------------------------------------------------------
   it("should show loading state initially", () => {
     mockFetchPending();
     render(
@@ -100,61 +107,67 @@ describe("StepMenu", () => {
     expect(screen.getByText("メニューを読み込み中...")).toBeInTheDocument();
   });
 
-  it("should display error state and retry button when fetch fails", async () => {
+  // ---------------------------------------------------------------------------
+  // 2. Fallback behaviour — fetch error triggers fallback + warning banner
+  // ---------------------------------------------------------------------------
+  it("should fall back to static menus and show warning banner when fetch fails", async () => {
     mockFetchError();
     render(
       <StepMenu selectedMenuId={null} onSelect={onSelect} onNext={onNext} />,
     );
+    // The warning banner should appear
     await waitFor(() => {
-      expect(screen.getByText("メニューの読み込みに失敗しました。")).toBeInTheDocument();
+      expect(
+        screen.getByText((_, el) =>
+          el?.textContent?.includes("メニュー情報を取得できませんでした") ?? false,
+        ),
+      ).toBeInTheDocument();
     });
-    expect(screen.getByText("再読み込み")).toBeInTheDocument();
+    // Fallback menus should be rendered — check a known fallback item
+    expect(screen.getByText("はり治療")).toBeInTheDocument();
   });
 
-  it("should retry fetch when retry button is clicked", async () => {
-    let callCount = 0;
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockImplementation(() => {
-        callCount++;
-        if (callCount === 1) {
-          return Promise.reject(new Error("Network error"));
-        }
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ menus: mockMenus }),
-        });
-      }),
-    );
-
-    render(
-      <StepMenu selectedMenuId={null} onSelect={onSelect} onNext={onNext} />,
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText("再読み込み")).toBeInTheDocument();
-    });
-
-    fireEvent.click(screen.getByText("再読み込み"));
-
-    await waitFor(() => {
-      expect(screen.getByText("カテゴリを選択してください")).toBeInTheDocument();
-    });
-    expect(callCount).toBe(2);
-  });
-
-  it("should display empty state when no menus available", async () => {
-    mockFetchSuccess([]);
+  // ---------------------------------------------------------------------------
+  // 3. Fallback behaviour — HTTP error also triggers fallback
+  // ---------------------------------------------------------------------------
+  it("should fall back to static menus when HTTP error status is returned", async () => {
+    mockFetchHttpError(500);
     render(
       <StepMenu selectedMenuId={null} onSelect={onSelect} onNext={onNext} />,
     );
     await waitFor(() => {
       expect(
-        screen.getByText("現在ご予約可能なメニューがありません。お電話にてお問い合わせください。"),
+        screen.getByText((_, el) =>
+          el?.textContent?.includes("メニュー情報を取得できませんでした") ?? false,
+        ),
       ).toBeInTheDocument();
     });
+    expect(screen.getByText("はり治療")).toBeInTheDocument();
   });
 
+  // ---------------------------------------------------------------------------
+  // 4. Fallback behaviour — empty menu array triggers fallback
+  // ---------------------------------------------------------------------------
+  it("should fall back to static menus when API returns empty array", async () => {
+    mockFetchSuccess([]);
+    render(
+      <StepMenu selectedMenuId={null} onSelect={onSelect} onNext={onNext} />,
+    );
+    await waitFor(() => {
+      // Fallback menus rendered
+      expect(screen.getByText("はり治療")).toBeInTheDocument();
+    });
+    // Warning banner should be shown
+    expect(
+      screen.getByText((_, el) =>
+        el?.textContent?.includes("メニュー情報を取得できませんでした") ?? false,
+      ),
+    ).toBeInTheDocument();
+  });
+
+  // ---------------------------------------------------------------------------
+  // 5. Fallback behaviour — non-array response
+  // ---------------------------------------------------------------------------
   it("should handle API returning non-array menus gracefully", async () => {
     vi.stubGlobal(
       "fetch",
@@ -167,59 +180,58 @@ describe("StepMenu", () => {
       <StepMenu selectedMenuId={null} onSelect={onSelect} onNext={onNext} />,
     );
     await waitFor(() => {
-      expect(
-        screen.getByText("現在ご予約可能なメニューがありません。お電話にてお問い合わせください。"),
-      ).toBeInTheDocument();
+      // Falls back to static menus
+      expect(screen.getByText("はり治療")).toBeInTheDocument();
     });
   });
 
-  it("should handle HTTP error status codes", async () => {
-    mockFetchHttpError(500);
+  // ---------------------------------------------------------------------------
+  // 6. Auto-retry: fetch is called multiple times before falling back
+  // ---------------------------------------------------------------------------
+  it("should retry fetch before falling back (MAX_RETRIES = 2)", async () => {
+    const fetchMock = vi.fn().mockRejectedValue(new Error("Network error"));
+    vi.stubGlobal("fetch", fetchMock);
+
     render(
       <StepMenu selectedMenuId={null} onSelect={onSelect} onNext={onNext} />,
     );
+
     await waitFor(() => {
-      expect(screen.getByText("メニューの読み込みに失敗しました。")).toBeInTheDocument();
+      expect(screen.getByText("はり治療")).toBeInTheDocument();
     });
+
+    // Should have been called twice (MAX_RETRIES = 2)
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
-  it("should render category buttons when menus loaded", async () => {
+  // ---------------------------------------------------------------------------
+  // 7. All categories rendered in a single screen (no category buttons)
+  // ---------------------------------------------------------------------------
+  it("should render all category groups in one screen when menus loaded", async () => {
     mockFetchSuccess(mockMenus);
     render(
       <StepMenu selectedMenuId={null} onSelect={onSelect} onNext={onNext} />,
     );
     await waitFor(() => {
+      // Category headings
       expect(screen.getByText("鍼灸")).toBeInTheDocument();
       expect(screen.getByText("整体")).toBeInTheDocument();
       expect(screen.getByText("マッサージ")).toBeInTheDocument();
     });
+    // All menus visible without clicking any category
+    expect(screen.getByText("鍼灸治療コース")).toBeInTheDocument();
+    expect(screen.getByText("整体コース")).toBeInTheDocument();
+    expect(screen.getByText("リラクゼーションマッサージ")).toBeInTheDocument();
   });
 
-  it("should filter menus by category on click", async () => {
-    mockFetchSuccess(mockMenus);
-    render(
-      <StepMenu selectedMenuId={null} onSelect={onSelect} onNext={onNext} />,
-    );
-    await waitFor(() => {
-      expect(screen.getByText("鍼灸")).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByText("鍼灸"));
-    await waitFor(() => {
-      expect(screen.getByText("鍼灸治療コース")).toBeInTheDocument();
-    });
-    expect(screen.queryByText("整体コース")).not.toBeInTheDocument();
-    expect(screen.queryByText("リラクゼーションマッサージ")).not.toBeInTheDocument();
-  });
-
+  // ---------------------------------------------------------------------------
+  // 8. Selecting a menu calls onSelect
+  // ---------------------------------------------------------------------------
   it("should call onSelect when a menu item is clicked", async () => {
     mockFetchSuccess(mockMenus);
     render(
       <StepMenu selectedMenuId={null} onSelect={onSelect} onNext={onNext} />,
     );
-    await waitFor(() => {
-      expect(screen.getByText("鍼灸")).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByText("鍼灸"));
     await waitFor(() => {
       expect(screen.getByText("鍼灸治療コース")).toBeInTheDocument();
     });
@@ -227,6 +239,9 @@ describe("StepMenu", () => {
     expect(onSelect).toHaveBeenCalledWith(mockMenus[0]);
   });
 
+  // ---------------------------------------------------------------------------
+  // 9. Next button disabled when no menu selected
+  // ---------------------------------------------------------------------------
   it("should show next button disabled when no menu selected", async () => {
     mockFetchSuccess(mockMenus);
     render(
@@ -238,6 +253,9 @@ describe("StepMenu", () => {
     expect(screen.getByText("次へ").closest("button")).toBeDisabled();
   });
 
+  // ---------------------------------------------------------------------------
+  // 10. Next button enabled when a menu is selected
+  // ---------------------------------------------------------------------------
   it("should enable next button when a menu is selected", async () => {
     mockFetchSuccess(mockMenus);
     render(
@@ -249,30 +267,30 @@ describe("StepMenu", () => {
     expect(screen.getByText("次へ").closest("button")).not.toBeDisabled();
   });
 
+  // ---------------------------------------------------------------------------
+  // 11. Price and duration displayed
+  // ---------------------------------------------------------------------------
   it("should display price and duration for menu items", async () => {
     mockFetchSuccess(mockMenus);
     render(
       <StepMenu selectedMenuId={null} onSelect={onSelect} onNext={onNext} />,
     );
     await waitFor(() => {
-      expect(screen.getByText("鍼灸")).toBeInTheDocument();
+      expect(screen.getByText("鍼灸治療コース")).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByText("鍼灸"));
-    await waitFor(() => {
-      expect(screen.getByText("5,000円")).toBeInTheDocument();
-      expect(screen.getByText("60分")).toBeInTheDocument();
-    });
+    // Price and duration are visible without clicking a category
+    expect(screen.getByText(/5,000/)).toBeInTheDocument();
+    expect(screen.getByText(/60/)).toBeInTheDocument();
   });
 
+  // ---------------------------------------------------------------------------
+  // 12. Visual feedback (check mark) for selected menu
+  // ---------------------------------------------------------------------------
   it("should show visual feedback for selected menu", async () => {
     mockFetchSuccess(mockMenus);
     const { container } = render(
       <StepMenu selectedMenuId="menu-1" onSelect={onSelect} onNext={onNext} />,
     );
-    await waitFor(() => {
-      expect(screen.getByText("鍼灸")).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByText("鍼灸"));
     await waitFor(() => {
       expect(screen.getByText("鍼灸治療コース")).toBeInTheDocument();
     });
@@ -281,17 +299,37 @@ describe("StepMenu", () => {
     expect(svg).toBeTruthy();
   });
 
-  it("should show message when category has no menus", async () => {
-    mockFetchSuccess([mockMenus[0]]);
+  // ---------------------------------------------------------------------------
+  // 13. No warning banner when API succeeds
+  // ---------------------------------------------------------------------------
+  it("should not show fallback warning banner when API succeeds", async () => {
+    mockFetchSuccess(mockMenus);
     render(
       <StepMenu selectedMenuId={null} onSelect={onSelect} onNext={onNext} />,
     );
     await waitFor(() => {
-      expect(screen.getByText("整体")).toBeInTheDocument();
+      expect(screen.getByText("鍼灸治療コース")).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByText("整体"));
+    expect(
+      screen.queryByText((_, el) =>
+        el?.textContent?.includes("メニュー情報を取得できませんでした") ?? false,
+      ),
+    ).not.toBeInTheDocument();
+  });
+
+  // ---------------------------------------------------------------------------
+  // 14. StepMenuProps interface unchanged — selectedMenuId, onSelect, onNext
+  // ---------------------------------------------------------------------------
+  it("should accept the documented StepMenuProps interface", async () => {
+    mockFetchSuccess(mockMenus);
+    // This test verifies that the component renders without type errors
+    // when called with { selectedMenuId, onSelect, onNext }
+    const { unmount } = render(
+      <StepMenu selectedMenuId="menu-1" onSelect={onSelect} onNext={onNext} />,
+    );
     await waitFor(() => {
-      expect(screen.getByText("このカテゴリにはメニューがありません。")).toBeInTheDocument();
+      expect(screen.getByText("鍼灸治療コース")).toBeInTheDocument();
     });
+    unmount();
   });
 });
