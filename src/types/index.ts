@@ -28,6 +28,7 @@ export const STATUS_COLORS: Record<ReservationStatus, string> = {
 export interface TimeSlot {
   time: string;
   available: boolean;
+  availableStaffCount?: number;
 }
 
 export interface ReservationFormData {

@@ -6,6 +6,7 @@ import { reservationSchema } from "@/lib/validators/reservation";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { sendClinicNotification, sendPatientConfirmation } from "@/lib/email/send";
 import { MENU_CATEGORY_LABELS, type MenuCategory } from "@/types";
+import { getMaxSlotsForTime } from "@/lib/slots";
 
 export async function POST(request: NextRequest) {
   // Rate limiting
@@ -68,7 +69,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const maxSlots = scheduleRows[0].maxSlots;
+    const fallbackMaxSlots = scheduleRows[0].maxSlots;
+
+    // Get staff-based max slots (falls back to schedules.maxSlots if staff not configured)
+    const maxSlots = await getMaxSlotsForTime(
+      data.reservationDate,
+      data.reservationTime,
+      fallbackMaxSlots,
+    );
 
     // Count existing reservations for this slot
     const existingCount = await db

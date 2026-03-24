@@ -74,17 +74,25 @@ export default function StepDateTime({
           ) : slots.length === 0 ? (
             <p className="text-gray-500 text-center py-4">空き枠がありません</p>
           ) : (
-            <div className="flex flex-wrap gap-2">
-              {slots.map((slot) => (
-                <TimeSlotButton
-                  key={slot.time}
-                  time={slot.time}
-                  available={slot.available}
-                  selected={selectedTime === slot.time}
-                  onClick={() => onSelectTime(slot.time)}
-                />
-              ))}
-            </div>
+            <>
+              <div className="flex flex-wrap gap-2">
+                {slots.map((slot) => (
+                  <TimeSlotButton
+                    key={slot.time}
+                    time={slot.time}
+                    available={slot.available}
+                    availableStaffCount={slot.availableStaffCount}
+                    selected={selectedTime === slot.time}
+                    onClick={() => onSelectTime(slot.time)}
+                  />
+                ))}
+              </div>
+              <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
+                <span><span className="text-emerald-500 font-bold">◎</span> 余裕あり</span>
+                <span><span className="text-amber-500 font-bold">△</span> 残りわずか</span>
+                <span><span className="text-gray-400 font-bold">×</span> 満席</span>
+              </div>
+            </>
           )}
         </div>
       )}

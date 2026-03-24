@@ -10,15 +10,18 @@
  */
 
 import { getDbReady } from "@/db";
-import { menus, schedules } from "@/db/schema";
+import { menus, schedules, staff, staffSchedules } from "@/db/schema";
 import { sql } from "drizzle-orm";
 import { menuSeedData, scheduleSeedData } from "@/db/menu-data";
+import { staffSeedData, generateStaffScheduleSeedData } from "@/db/staff-data";
 
 /** Module-level flags to prevent concurrent/duplicate seeding */
 let menuSeedInProgress = false;
 let menuSeedCompleted = false;
 let scheduleSeedInProgress = false;
 let scheduleSeedCompleted = false;
+let staffSeedInProgress = false;
+let staffSeedCompleted = false;
 
 /**
  * Auto-seed menus if the table is completely empty.
@@ -105,5 +108,58 @@ export async function autoSeedSchedulesIfEmpty(): Promise<void> {
     throw error;
   } finally {
     scheduleSeedInProgress = false;
+  }
+}
+
+/**
+ * Auto-seed staff and their schedules if the staff table is completely empty.
+ * Seeds 3 default practitioners with Mon-Sat working schedules.
+ */
+export async function autoSeedStaffIfEmpty(): Promise<void> {
+  if (staffSeedCompleted) return;
+  if (staffSeedInProgress) {
+    await new Promise((r) => setTimeout(r, 1000));
+    return;
+  }
+
+  staffSeedInProgress = true;
+  try {
+    const db = await getDbReady();
+
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(staff);
+    const totalCount = result[0]?.count ?? 0;
+
+    if (totalCount > 0) {
+      staffSeedCompleted = true;
+      return;
+    }
+
+    console.warn("[auto-seed] No staff found in DB, inserting seed data...");
+
+    for (const staffMember of staffSeedData) {
+      const inserted = await db
+        .insert(staff)
+        .values(staffMember)
+        .onConflictDoNothing()
+        .returning();
+
+      if (inserted.length > 0) {
+        const staffId = inserted[0].id;
+        const scheduleData = generateStaffScheduleSeedData(staffId);
+        for (const schedule of scheduleData) {
+          await db.insert(staffSchedules).values(schedule).onConflictDoNothing();
+        }
+      }
+    }
+
+    console.warn(`[auto-seed] Inserted ${staffSeedData.length} staff with schedules`);
+    staffSeedCompleted = true;
+  } catch (error) {
+    console.error("[auto-seed] Failed to seed staff:", error);
+    throw error;
+  } finally {
+    staffSeedInProgress = false;
   }
 }
