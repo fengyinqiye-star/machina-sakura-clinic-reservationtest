@@ -1,4 +1,4 @@
-import { db } from "@/db";
+import { getDbReady } from "@/db";
 import { schedules, reservations, menus } from "@/db/schema";
 import { eq, and, ne, sql } from "drizzle-orm";
 import type { TimeSlot } from "@/types";
@@ -28,6 +28,8 @@ export async function getAvailableSlots(
   date: string,
   menuId: string,
 ): Promise<{ slots: TimeSlot[]; isHoliday: boolean }> {
+  const db = await getDbReady();
+
   // Get the menu to know duration
   const menu = await db.select().from(menus).where(eq(menus.id, menuId)).limit(1);
   if (menu.length === 0) {

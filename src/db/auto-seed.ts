@@ -9,7 +9,7 @@
  * - Runs at most once per cold start (seedCompleted flag)
  */
 
-import { db } from "@/db";
+import { getDbReady } from "@/db";
 import { menus, schedules } from "@/db/schema";
 import { sql } from "drizzle-orm";
 import { menuSeedData, scheduleSeedData } from "@/db/menu-data";
@@ -36,6 +36,8 @@ export async function autoSeedMenusIfEmpty(): Promise<void> {
 
   menuSeedInProgress = true;
   try {
+    const db = await getDbReady();
+
     // Count ALL menus (including inactive) to avoid re-seeding when admin
     // deactivated all menus intentionally
     const result = await db
@@ -78,6 +80,8 @@ export async function autoSeedSchedulesIfEmpty(): Promise<void> {
 
   scheduleSeedInProgress = true;
   try {
+    const db = await getDbReady();
+
     const result = await db
       .select({ count: sql<number>`count(*)` })
       .from(schedules);

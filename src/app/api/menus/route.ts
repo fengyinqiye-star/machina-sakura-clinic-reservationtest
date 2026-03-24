@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import { db } from "@/db";
+import { getDbReady } from "@/db";
 import { menus } from "@/db/schema";
 import { asc, sql } from "drizzle-orm";
 import { autoSeedMenusIfEmpty, autoSeedSchedulesIfEmpty } from "@/db/auto-seed";
 
 export async function GET() {
   try {
+    const db = await getDbReady();
     let allMenus = await db
       .select()
       .from(menus)
