@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { schedules, reservations, menus } from "@/db/schema";
 import { eq, and, ne, sql } from "drizzle-orm";
 import type { TimeSlot } from "@/types";
+import { autoSeedSchedulesIfEmpty } from "@/db/auto-seed";
 
 function generateTimeSlots(
   startTime: string,
@@ -49,6 +50,21 @@ export async function getAvailableSlots(
       .select()
       .from(schedules)
       .where(eq(schedules.dayOfWeek, dayOfWeek));
+  }
+
+  // If still empty, the DB may not have been seeded yet — auto-seed and retry
+  if (scheduleRows.length === 0) {
+    await autoSeedSchedulesIfEmpty();
+    scheduleRows = await db
+      .select()
+      .from(schedules)
+      .where(eq(schedules.specificDate, date));
+    if (scheduleRows.length === 0) {
+      scheduleRows = await db
+        .select()
+        .from(schedules)
+        .where(eq(schedules.dayOfWeek, dayOfWeek));
+    }
   }
 
   if (scheduleRows.length === 0) {

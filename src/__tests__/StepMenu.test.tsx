@@ -115,12 +115,10 @@ describe("StepMenu", () => {
     render(
       <StepMenu selectedMenuId={null} onSelect={onSelect} onNext={onNext} />,
     );
-    // The warning banner should appear
+    // The warning banner should appear (use exact text on the <p> element)
     await waitFor(() => {
       expect(
-        screen.getByText((_, el) =>
-          el?.textContent?.includes("メニュー情報を取得できませんでした") ?? false,
-        ),
+        screen.getByText(/メニュー情報を取得できませんでした/),
       ).toBeInTheDocument();
     });
     // Fallback menus should be rendered — check a known fallback item
@@ -137,9 +135,7 @@ describe("StepMenu", () => {
     );
     await waitFor(() => {
       expect(
-        screen.getByText((_, el) =>
-          el?.textContent?.includes("メニュー情報を取得できませんでした") ?? false,
-        ),
+        screen.getByText(/メニュー情報を取得できませんでした/),
       ).toBeInTheDocument();
     });
     expect(screen.getByText("はり治療")).toBeInTheDocument();
@@ -159,9 +155,7 @@ describe("StepMenu", () => {
     });
     // Warning banner should be shown
     expect(
-      screen.getByText((_, el) =>
-        el?.textContent?.includes("メニュー情報を取得できませんでした") ?? false,
-      ),
+      screen.getByText(/メニュー情報を取得できませんでした/),
     ).toBeInTheDocument();
   });
 
@@ -311,9 +305,7 @@ describe("StepMenu", () => {
       expect(screen.getByText("鍼灸治療コース")).toBeInTheDocument();
     });
     expect(
-      screen.queryByText((_, el) =>
-        el?.textContent?.includes("メニュー情報を取得できませんでした") ?? false,
-      ),
+      screen.queryByText(/メニュー情報を取得できませんでした/),
     ).not.toBeInTheDocument();
   });
 

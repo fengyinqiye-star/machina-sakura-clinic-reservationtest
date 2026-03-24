@@ -2,18 +2,39 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { menus } from "@/db/schema";
 import { asc, sql } from "drizzle-orm";
+import { autoSeedMenusIfEmpty, autoSeedSchedulesIfEmpty } from "@/db/auto-seed";
 
 export async function GET() {
   try {
-    // SQLite stores booleans as 0/1 integers.
-    // eq(menus.isActive, true) can produce "is_active = true" which some
-    // SQLite drivers do not evaluate correctly. Use a raw SQL fragment
-    // to ensure the comparison is against the integer literal 1.
-    const allMenus = await db
+    let allMenus = await db
       .select()
       .from(menus)
       .where(sql`${menus.isActive} = 1`)
       .orderBy(asc(menus.sortOrder));
+
+    // If no active menus, check if DB is truly empty (vs admin deactivated all)
+    if (allMenus.length === 0) {
+      // Count ALL menus including inactive
+      const totalResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(menus);
+      const totalCount = totalResult[0]?.count ?? 0;
+
+      if (totalCount === 0) {
+        // DB is empty — auto-seed menus and schedules
+        console.warn("[menus/GET] DB empty, triggering auto-seed...");
+        await autoSeedMenusIfEmpty();
+        await autoSeedSchedulesIfEmpty();
+
+        // Re-fetch after seeding
+        allMenus = await db
+          .select()
+          .from(menus)
+          .where(sql`${menus.isActive} = 1`)
+          .orderBy(asc(menus.sortOrder));
+      }
+      // If totalCount > 0 but allMenus is empty, admin deactivated all — return empty normally
+    }
 
     return NextResponse.json(
       { menus: allMenus },
