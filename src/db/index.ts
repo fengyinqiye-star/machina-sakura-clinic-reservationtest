@@ -25,7 +25,6 @@ function createDb(): DrizzleDb {
 }
 
 async function initLocalDb(db: DrizzleDb): Promise<void> {
-  if (process.env.TURSO_DATABASE_URL) return; // Turso manages schema via drizzle-kit
   const client = (db as unknown as { $client: ReturnType<typeof createClient> }).$client;
   await client.executeMultiple(`
     CREATE TABLE IF NOT EXISTS menus (
@@ -92,25 +91,24 @@ async function initLocalDb(db: DrizzleDb): Promise<void> {
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
-  console.warn("[db] Local SQLite tables created");
+  const mode = process.env.TURSO_DATABASE_URL ? "Turso" : "local SQLite";
+  console.warn(`[db] Tables created (${mode})`);
 }
 
 function getInstance(): DrizzleDb {
   if (!_db) {
     _db = createDb();
-    if (!process.env.TURSO_DATABASE_URL) {
-      _initPromise = initLocalDb(_db).catch((e) =>
-        console.error("[db] initLocalDb error:", e)
-      );
-    }
+    _initPromise = initLocalDb(_db).catch((e) =>
+      console.error("[db] initLocalDb error:", e)
+    );
   }
   return _db;
 }
 
 /**
  * Returns a ready-to-use DB instance.
- * In local SQLite fallback mode, waits for table creation to complete.
- * In Turso mode, returns immediately (tables managed by drizzle-kit).
+ * Waits for table creation (CREATE TABLE IF NOT EXISTS) to complete.
+ * Works for both Turso cloud and local SQLite fallback.
  */
 export async function getDbReady(): Promise<DrizzleDb> {
   const db = getInstance();
