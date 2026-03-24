@@ -7,6 +7,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { sendClinicNotification, sendPatientConfirmation } from "@/lib/email/send";
 import { MENU_CATEGORY_LABELS, type MenuCategory } from "@/types";
 import { getMaxSlotsForTime } from "@/lib/slots";
+import { autoSeedMenusIfEmpty } from "@/db/auto-seed";
 
 export async function POST(request: NextRequest) {
   // Rate limiting
@@ -36,8 +37,12 @@ export async function POST(request: NextRequest) {
 
     const data = parsed.data;
 
-    // Get menu info
-    const menuRows = await db.select().from(menus).where(eq(menus.id, data.menuId)).limit(1);
+    // Get menu info（Lambda独立起動時のDB空対策）
+    let menuRows = await db.select().from(menus).where(eq(menus.id, data.menuId)).limit(1);
+    if (menuRows.length === 0) {
+      await autoSeedMenusIfEmpty();
+      menuRows = await db.select().from(menus).where(eq(menus.id, data.menuId)).limit(1);
+    }
     if (menuRows.length === 0) {
       return NextResponse.json(
         { success: false, error: "指定されたメニューが見つかりません" },

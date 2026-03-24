@@ -2,7 +2,7 @@ import { getDbReady } from "@/db";
 import { schedules, reservations, menus, staff, staffSchedules } from "@/db/schema";
 import { eq, and, ne, sql } from "drizzle-orm";
 import type { TimeSlot } from "@/types";
-import { autoSeedSchedulesIfEmpty, autoSeedStaffIfEmpty } from "@/db/auto-seed";
+import { autoSeedMenusIfEmpty, autoSeedSchedulesIfEmpty, autoSeedStaffIfEmpty } from "@/db/auto-seed";
 
 function generateTimeSlots(
   startTime: string,
@@ -116,8 +116,12 @@ export async function getAvailableSlots(
 ): Promise<{ slots: TimeSlot[]; isHoliday: boolean }> {
   const db = await getDbReady();
 
-  // Get the menu to know duration
-  const menu = await db.select().from(menus).where(eq(menus.id, menuId)).limit(1);
+  // メニューが空の場合は auto-seed してから再クエリ
+  let menu = await db.select().from(menus).where(eq(menus.id, menuId)).limit(1);
+  if (menu.length === 0) {
+    await autoSeedMenusIfEmpty();
+    menu = await db.select().from(menus).where(eq(menus.id, menuId)).limit(1);
+  }
   if (menu.length === 0) {
     throw new Error("メニューが見つかりません");
   }
