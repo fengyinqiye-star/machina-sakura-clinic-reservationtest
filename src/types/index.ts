@@ -81,3 +81,20 @@ export interface PaginatedResponse<T> {
   page: number;
   totalPages: number;
 }
+
+export type StaffRole = "practitioner" | "reception";
+
+export const STAFF_ROLE_LABELS: Record<StaffRole, string> = {
+  practitioner: "施術者",
+  reception: "受付",
+};
+
+export const DAY_OF_WEEK_LABELS = ["日", "月", "火", "水", "木", "金", "土"] as const;
+
+export interface StaffScheduleEntry {
+  dayOfWeek: number | null;
+  specificDate: string | null;
+  startTime: string;
+  endTime: string;
+  isOff: boolean;
+}

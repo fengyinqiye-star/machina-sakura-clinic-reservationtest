@@ -77,3 +77,50 @@ export type Reservation = typeof reservations.$inferSelect;
 export type NewReservation = typeof reservations.$inferInsert;
 export type Schedule = typeof schedules.$inferSelect;
 export type NewSchedule = typeof schedules.$inferInsert;
+
+export const staff = sqliteTable("staff", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  name: text("name").notNull(),
+  role: text("role", {
+    enum: ["practitioner", "reception"],
+  })
+    .notNull()
+    .default("practitioner"),
+  specialties: text("specialties"),
+  color: text("color").notNull().default("#f472b6"),
+  isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(datetime('now'))`),
+  updatedAt: text("updated_at")
+    .notNull()
+    .default(sql`(datetime('now'))`),
+});
+
+export const staffSchedules = sqliteTable("staff_schedules", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  staffId: text("staff_id")
+    .notNull()
+    .references(() => staff.id),
+  dayOfWeek: integer("day_of_week"),
+  specificDate: text("specific_date"),
+  startTime: text("start_time").notNull(),
+  endTime: text("end_time").notNull(),
+  isOff: integer("is_off", { mode: "boolean" }).notNull().default(false),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(datetime('now'))`),
+  updatedAt: text("updated_at")
+    .notNull()
+    .default(sql`(datetime('now'))`),
+});
+
+export type Staff = typeof staff.$inferSelect;
+export type NewStaff = typeof staff.$inferInsert;
+export type StaffSchedule = typeof staffSchedules.$inferSelect;
+export type NewStaffSchedule = typeof staffSchedules.$inferInsert;
