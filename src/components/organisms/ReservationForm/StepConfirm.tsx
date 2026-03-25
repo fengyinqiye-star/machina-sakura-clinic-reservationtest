@@ -87,7 +87,7 @@ export default function StepConfirm({ data, onSubmit, onEditStep }: StepConfirmP
             <p className="text-xs text-gray-500">お客様情報</p>
             <p className="text-gray-800">{data.patientName} ({data.patientKana})</p>
             <p className="text-sm text-gray-600">TEL: {data.phone}</p>
-            {data.email && <p className="text-sm text-gray-600">Email: {data.email}</p>}
+            <p className="text-sm text-gray-600">Email: {data.email}</p>
             <p className="text-sm text-gray-600">
               来院歴: {data.isFirstVisit ? "初診" : "再診"}
             </p>

@@ -21,9 +21,8 @@ export const reservationSchema = z.object({
     .regex(/^0\d{9,10}$/, "電話番号は0から始まる10〜11桁の数字で入力してください"),
   email: z
     .string()
-    .email("メールアドレスの形式が正しくありません")
-    .optional()
-    .or(z.literal("")),
+    .min(1, "メールアドレスを入力してください")
+    .email("メールアドレスの形式が正しくありません"),
   isFirstVisit: z.boolean(),
   symptoms: z
     .string()

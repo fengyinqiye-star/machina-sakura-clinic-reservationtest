@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
         patientName: data.patientName,
         patientKana: data.patientKana,
         phone: data.phone,
-        email: data.email || null,
+        email: data.email,
         menuId: data.menuId,
         reservationDate: data.reservationDate,
         reservationTime: data.reservationTime,

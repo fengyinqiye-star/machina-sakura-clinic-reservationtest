@@ -19,15 +19,21 @@ describe("reservationSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("should accept data without optional fields", () => {
-    const { email, symptoms, ...required } = validData;
+  it("should accept data without optional fields (symptoms)", () => {
+    const { symptoms, ...required } = validData;
     const result = reservationSchema.safeParse(required);
     expect(result.success).toBe(true);
   });
 
-  it("should accept empty email string", () => {
+  it("should reject empty email string (email is required)", () => {
     const result = reservationSchema.safeParse({ ...validData, email: "" });
-    expect(result.success).toBe(true);
+    expect(result.success).toBe(false);
+  });
+
+  it("should reject missing email (email is required)", () => {
+    const { email, ...rest } = validData;
+    const result = reservationSchema.safeParse(rest);
+    expect(result.success).toBe(false);
   });
 
   it("should reject invalid menuId (not UUID)", () => {

@@ -24,8 +24,8 @@ describe("reservationSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("should accept reservation without optional fields", () => {
-    const { email, symptoms, honeypot, ...required } = validReservation;
+  it("should accept reservation without optional fields (symptoms, honeypot)", () => {
+    const { symptoms, honeypot, ...required } = validReservation;
     const result = reservationSchema.safeParse({ ...required, isFirstVisit: false });
     expect(result.success).toBe(true);
   });
@@ -86,12 +86,12 @@ describe("reservationSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("should accept empty string for email", () => {
+  it("should reject empty string for email (email is required)", () => {
     const result = reservationSchema.safeParse({
       ...validReservation,
       email: "",
     });
-    expect(result.success).toBe(true);
+    expect(result.success).toBe(false);
   });
 
   it("should reject invalid email format", () => {
