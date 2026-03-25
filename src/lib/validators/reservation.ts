@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const reservationSchema = z.object({
-  menuId: z.string().uuid("メニューを選択してください"),
+  menuId: z.string().min(1, "メニューを選択してください"),
   reservationDate: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "日付の形式が正しくありません"),
