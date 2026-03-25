@@ -11,7 +11,7 @@ import type { Menu } from "@/db/schema";
 const FALLBACK_MENUS: Menu[] = [
   // 鍼灸
   {
-    id: "fallback-acupuncture-1",
+    id: "menu-acupuncture-hari-0001",
     category: "acupuncture",
     name: "はり治療",
     description:
@@ -25,7 +25,7 @@ const FALLBACK_MENUS: Menu[] = [
     updatedAt: "",
   },
   {
-    id: "fallback-acupuncture-2",
+    id: "menu-acupuncture-okyu-0002",
     category: "acupuncture",
     name: "お灸治療",
     description:
@@ -39,7 +39,7 @@ const FALLBACK_MENUS: Menu[] = [
     updatedAt: "",
   },
   {
-    id: "fallback-acupuncture-3",
+    id: "menu-acupuncture-sogo-0003",
     category: "acupuncture",
     name: "鍼灸総合コース",
     description:
@@ -53,7 +53,7 @@ const FALLBACK_MENUS: Menu[] = [
     updatedAt: "",
   },
   {
-    id: "fallback-acupuncture-4",
+    id: "menu-acupuncture-biyou-0004",
     category: "acupuncture",
     name: "美容鍼",
     description:
@@ -68,7 +68,7 @@ const FALLBACK_MENUS: Menu[] = [
   },
   // 整体
   {
-    id: "fallback-chiropractic-1",
+    id: "menu-chiropractic-kotsub-0005",
     category: "chiropractic",
     name: "骨盤矯正",
     description:
@@ -82,7 +82,7 @@ const FALLBACK_MENUS: Menu[] = [
     updatedAt: "",
   },
   {
-    id: "fallback-chiropractic-2",
+    id: "menu-chiropractic-shisei-0006",
     category: "chiropractic",
     name: "姿勢改善コース",
     description:
@@ -96,7 +96,7 @@ const FALLBACK_MENUS: Menu[] = [
     updatedAt: "",
   },
   {
-    id: "fallback-chiropractic-3",
+    id: "menu-chiropractic-sango-0007",
     category: "chiropractic",
     name: "産後骨盤ケア",
     description:
@@ -111,7 +111,7 @@ const FALLBACK_MENUS: Menu[] = [
   },
   // マッサージ
   {
-    id: "fallback-massage-1",
+    id: "menu-massage-zenshin30-0008",
     category: "massage",
     name: "全身マッサージ 30分",
     description: "全身をほぐす30分のショートコース。お時間のない方にもおすすめです。",
@@ -124,7 +124,7 @@ const FALLBACK_MENUS: Menu[] = [
     updatedAt: "",
   },
   {
-    id: "fallback-massage-2",
+    id: "menu-massage-zenshin60-0009",
     category: "massage",
     name: "全身マッサージ 60分",
     description:
@@ -138,7 +138,7 @@ const FALLBACK_MENUS: Menu[] = [
     updatedAt: "",
   },
   {
-    id: "fallback-massage-3",
+    id: "menu-massage-katakubi-0010",
     category: "massage",
     name: "肩・首集中ケア",
     description:
@@ -152,7 +152,7 @@ const FALLBACK_MENUS: Menu[] = [
     updatedAt: "",
   },
   {
-    id: "fallback-massage-4",
+    id: "menu-massage-foot-0011",
     category: "massage",
     name: "フットケア",
     description:

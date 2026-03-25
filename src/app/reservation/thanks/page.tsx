@@ -57,6 +57,14 @@ export default function ThanksPage() {
             </div>
           )}
 
+          {/* Email confirmation note */}
+          <div className="bg-sakura-50 border border-sakura-200 rounded-xl p-4 mb-6 text-left">
+            <p className="text-sm text-sakura-700 leading-relaxed">
+              メールアドレスをご入力いただいた方には、予約確認メールを送信しております。
+              届かない場合は迷惑メールフォルダをご確認ください。
+            </p>
+          </div>
+
           {/* Important Notice */}
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-6 text-left">
             <h3 className="font-bold text-amber-800 mb-2">ご注意</h3>

@@ -67,7 +67,7 @@ export default function StepPatientInfo({
         />
       </FormField>
 
-      <FormField label="メールアドレス（任意）" htmlFor="email">
+      <FormField label="メールアドレス（予約確認メール送信用）" htmlFor="email">
         <Input
           id="email"
           type="email"
@@ -75,8 +75,8 @@ export default function StepPatientInfo({
           error={errors.email?.message}
           {...register("email")}
         />
-        <p className="text-xs text-gray-400 mt-1">
-          入力いただくと予約確認メールをお送りします
+        <p className="text-xs text-sakura-500 mt-1">
+          ※ 入力いただくと予約確認メールを自動送信します
         </p>
       </FormField>
 
