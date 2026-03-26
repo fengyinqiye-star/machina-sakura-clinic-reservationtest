@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import AdminLayout from "@/components/templates/AdminLayout";
 import Card from "@/components/atoms/Card";
@@ -38,12 +38,8 @@ function createDefaultWeekly(): WeeklyEntry[] {
   }));
 }
 
-export default function StaffSchedulePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+export default function StaffSchedulePage() {
+  const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [staffData, setStaffData] = useState<Staff | null>(null);
   const [loading, setLoading] = useState(true);
