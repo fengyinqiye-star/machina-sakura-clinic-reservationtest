@@ -109,6 +109,8 @@ async function initLocalDb(db: DrizzleDb): Promise<void> {
   // SQLite doesn't support ADD COLUMN IF NOT EXISTS, so we catch and ignore errors.
   const migrations: string[] = [
     `ALTER TABLE staff ADD COLUMN profile_image_url TEXT`,
+    `ALTER TABLE reservations ADD COLUMN staff_id TEXT`,
+    `ALTER TABLE reservations ADD COLUMN staff_memo TEXT`,
   ];
   for (const migrationSql of migrations) {
     try {
