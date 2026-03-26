@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { db } from "@/db";
+import { getDbReady } from "@/db";
 import { reservations, menus, staff } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -31,6 +31,7 @@ export async function GET(
   const { id } = await params;
 
   try {
+    const db = await getDbReady();
     const rows = await db
       .select({
         id: reservations.id,
@@ -83,6 +84,7 @@ export async function PATCH(
   const { id } = await params;
 
   try {
+    const db = await getDbReady();
     const body = await request.json();
     const parsed = updateSchema.safeParse(body);
     if (!parsed.success) {

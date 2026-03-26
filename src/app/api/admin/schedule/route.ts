@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { db } from "@/db";
+import { getDbReady } from "@/db";
 import { schedules } from "@/db/schema";
 import { isNull, isNotNull, asc } from "drizzle-orm";
 import { scheduleUpdateSchema } from "@/lib/validators/schedule";
@@ -12,6 +12,7 @@ export async function GET() {
   }
 
   try {
+    const db = await getDbReady();
     const allSchedules = await db.select().from(schedules).orderBy(asc(schedules.dayOfWeek));
     return NextResponse.json({ schedules: allSchedules });
   } catch (error) {
@@ -27,6 +28,7 @@ export async function PUT(request: NextRequest) {
   }
 
   try {
+    const db = await getDbReady();
     const body = await request.json();
     const parsed = scheduleUpdateSchema.safeParse(body);
     if (!parsed.success) {

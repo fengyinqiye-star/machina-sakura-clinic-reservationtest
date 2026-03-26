@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { db } from "@/db";
+import { getDbReady } from "@/db";
 import { staff, staffSchedules } from "@/db/schema";
 import { eq, isNull, isNotNull, and, asc } from "drizzle-orm";
 import { staffScheduleUpdateSchema } from "@/lib/validators/staff";
@@ -17,6 +17,7 @@ export async function GET(
   const { id } = await params;
 
   try {
+    const db = await getDbReady();
     // Verify staff exists
     const staffResult = await db.select().from(staff).where(eq(staff.id, id)).limit(1);
     if (staffResult.length === 0) {
@@ -48,6 +49,7 @@ export async function PUT(
   const { id } = await params;
 
   try {
+    const db = await getDbReady();
     // Verify staff exists
     const staffResult = await db.select().from(staff).where(eq(staff.id, id)).limit(1);
     if (staffResult.length === 0) {

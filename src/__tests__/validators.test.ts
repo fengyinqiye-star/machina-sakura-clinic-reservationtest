@@ -78,20 +78,34 @@ describe("reservationSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("should reject invalid menuId (not UUID)", () => {
+  it("should accept non-UUID menuId (custom format allowed)", () => {
     const result = reservationSchema.safeParse({
       ...validReservation,
-      menuId: "not-a-uuid",
+      menuId: "menu-acupuncture-hari-0001",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("should reject empty menuId", () => {
+    const result = reservationSchema.safeParse({
+      ...validReservation,
+      menuId: "",
     });
     expect(result.success).toBe(false);
   });
 
-  it("should reject empty string for email (email is required)", () => {
+  it("should accept empty string for email (email is optional in API)", () => {
     const result = reservationSchema.safeParse({
       ...validReservation,
       email: "",
     });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
+  });
+
+  it("should accept omitted email (email is optional in API)", () => {
+    const { email, ...rest } = validReservation;
+    const result = reservationSchema.safeParse(rest);
+    expect(result.success).toBe(true);
   });
 
   it("should reject invalid email format", () => {

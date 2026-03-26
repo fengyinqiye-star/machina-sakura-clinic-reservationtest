@@ -22,8 +22,9 @@ export const reservationSchema = z.object({
     .regex(/^0\d{9,10}$/, "電話番号は0から始まる10〜11桁の数字で入力してください"),
   email: z
     .string()
-    .min(1, "メールアドレスを入力してください")
-    .email("メールアドレスの形式が正しくありません"),
+    .email("メールアドレスの形式が正しくありません")
+    .optional()
+    .or(z.literal("")),
   isFirstVisit: z.boolean(),
   symptoms: z
     .string()
@@ -39,7 +40,10 @@ export const patientInfoSchema = z.object({
   patientName: reservationSchema.shape.patientName,
   patientKana: reservationSchema.shape.patientKana,
   phone: reservationSchema.shape.phone,
-  email: reservationSchema.shape.email,
+  email: z
+    .string()
+    .min(1, "メールアドレスを入力してください")
+    .email("メールアドレスの形式が正しくありません"),
   isFirstVisit: reservationSchema.shape.isFirstVisit,
   symptoms: reservationSchema.shape.symptoms,
 });

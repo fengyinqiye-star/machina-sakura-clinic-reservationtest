@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { db } from "@/db";
+import { getDbReady } from "@/db";
 import { menus } from "@/db/schema";
 import { asc } from "drizzle-orm";
 import { menuSchema } from "@/lib/validators/menu";
@@ -12,6 +12,7 @@ export async function GET() {
   }
 
   try {
+    const db = await getDbReady();
     const allMenus = await db.select().from(menus).orderBy(asc(menus.sortOrder));
     return NextResponse.json({ menus: allMenus });
   } catch (error) {
@@ -36,6 +37,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const db = await getDbReady();
     const result = await db.insert(menus).values(parsed.data).returning();
     return NextResponse.json({ menu: result[0] }, { status: 201 });
   } catch (error) {

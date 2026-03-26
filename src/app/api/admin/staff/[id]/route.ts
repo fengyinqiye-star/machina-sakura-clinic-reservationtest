@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { db } from "@/db";
+import { getDbReady } from "@/db";
 import { staff, staffSchedules } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { staffSchema } from "@/lib/validators/staff";
@@ -19,6 +19,7 @@ export async function GET(
   const { id } = await params;
 
   try {
+    const db = await getDbReady();
     const result = await db.select().from(staff).where(eq(staff.id, id)).limit(1);
     if (result.length === 0) {
       return NextResponse.json({ error: "スタッフが見つかりません" }, { status: 404 });
@@ -42,6 +43,7 @@ export async function PUT(
   const { id } = await params;
 
   try {
+    const db = await getDbReady();
     const body = await request.json();
     const parsed = staffPatchSchema.safeParse(body);
     if (!parsed.success) {
@@ -89,6 +91,7 @@ export async function DELETE(
   const { id } = await params;
 
   try {
+    const db = await getDbReady();
     const existing = await db.select().from(staff).where(eq(staff.id, id)).limit(1);
     if (existing.length === 0) {
       return NextResponse.json({ error: "スタッフが見つかりません" }, { status: 404 });

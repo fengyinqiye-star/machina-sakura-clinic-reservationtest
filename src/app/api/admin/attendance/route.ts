@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { db } from "@/db";
+import { getDbReady } from "@/db";
 import { attendance, staff, reservations } from "@/db/schema";
 import { eq, and, gte, lte, sql, asc, desc, ne } from "drizzle-orm";
+import { autoSeedStaffIfEmpty } from "@/db/auto-seed";
 
 /**
  * GET /api/admin/attendance
@@ -17,6 +18,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    await autoSeedStaffIfEmpty();
+    const db = await getDbReady();
     const { searchParams } = request.nextUrl;
     const month = searchParams.get("month");
     const staffId = searchParams.get("staffId");
@@ -148,6 +151,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const db = await getDbReady();
     const body = await request.json();
     const { staffId, date, action, note } = body;
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { db } from "@/db";
+import { getDbReady } from "@/db";
 import { staff } from "@/db/schema";
 import { asc } from "drizzle-orm";
 import { staffSchema } from "@/lib/validators/staff";
@@ -12,6 +12,7 @@ export async function GET() {
   }
 
   try {
+    const db = await getDbReady();
     const allStaff = await db.select().from(staff).orderBy(asc(staff.sortOrder));
     return NextResponse.json({ staff: allStaff });
   } catch (error) {
@@ -36,6 +37,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const db = await getDbReady();
     const result = await db.insert(staff).values(parsed.data).returning();
     return NextResponse.json({ staff: result[0] }, { status: 201 });
   } catch (error) {

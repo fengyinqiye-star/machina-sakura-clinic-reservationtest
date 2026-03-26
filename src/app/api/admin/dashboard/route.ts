@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { db } from "@/db";
+import { getDbReady } from "@/db";
 import { reservations, menus, staff } from "@/db/schema";
 import { eq, and, gte, lte, sql, desc } from "drizzle-orm";
 
@@ -11,6 +11,7 @@ export async function GET() {
   }
 
   try {
+    const db = await getDbReady();
     const now = new Date();
     const today = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, "0")}-${now.getDate().toString().padStart(2, "0")}`;
 

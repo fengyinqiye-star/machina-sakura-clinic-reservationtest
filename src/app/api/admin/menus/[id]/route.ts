@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { db } from "@/db";
+import { getDbReady } from "@/db";
 import { menus } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { menuSchema } from "@/lib/validators/menu";
@@ -20,6 +20,7 @@ export async function PATCH(
   const { id } = await params;
 
   try {
+    const db = await getDbReady();
     const body = await request.json();
 
     // Validate with Zod partial schema

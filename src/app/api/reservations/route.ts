@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db";
+import { getDbReady } from "@/db";
 import { reservations, menus, schedules } from "@/db/schema";
 import { eq, and, ne, sql } from "drizzle-orm";
 import { reservationSchema } from "@/lib/validators/reservation";
@@ -7,7 +7,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { sendClinicNotification, sendPatientConfirmation } from "@/lib/email/send";
 import { MENU_CATEGORY_LABELS, type MenuCategory } from "@/types";
 import { getMaxSlotsForTime } from "@/lib/slots";
-import { autoSeedMenusIfEmpty } from "@/db/auto-seed";
+import { autoSeedMenusIfEmpty, autoSeedSchedulesIfEmpty } from "@/db/auto-seed";
 
 export async function POST(request: NextRequest) {
   // Rate limiting
@@ -37,12 +37,15 @@ export async function POST(request: NextRequest) {
 
     const data = parsed.data;
 
-    // Get menu info（Lambda独立起動時のDB空対策）
-    let menuRows = await db.select().from(menus).where(eq(menus.id, data.menuId)).limit(1);
-    if (menuRows.length === 0) {
-      await autoSeedMenusIfEmpty();
-      menuRows = await db.select().from(menus).where(eq(menus.id, data.menuId)).limit(1);
-    }
+    // Ensure DB is fully initialized (tables created) before any queries
+    const db = await getDbReady();
+
+    // Auto-seed menus and schedules if empty (Lambda cold-start safety)
+    await autoSeedMenusIfEmpty();
+    await autoSeedSchedulesIfEmpty();
+
+    // Get menu info
+    const menuRows = await db.select().from(menus).where(eq(menus.id, data.menuId)).limit(1);
     if (menuRows.length === 0) {
       return NextResponse.json(
         { success: false, error: "指定されたメニューが見つかりません" },
@@ -110,7 +113,7 @@ export async function POST(request: NextRequest) {
         patientName: data.patientName,
         patientKana: data.patientKana,
         phone: data.phone,
-        email: data.email,
+        email: data.email || null,
         menuId: data.menuId,
         staffId: data.staffId || null,
         reservationDate: data.reservationDate,
