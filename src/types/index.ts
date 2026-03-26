@@ -29,6 +29,12 @@ export interface TimeSlot {
   time: string;
   available: boolean;
   availableStaffCount?: number;
+  availableStaffNames?: string[];
+}
+
+export interface StaffInfo {
+  name: string;
+  specialties: string | null;
 }
 
 export interface ReservationFormData {

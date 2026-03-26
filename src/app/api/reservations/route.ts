@@ -122,13 +122,13 @@ export async function POST(request: NextRequest) {
 
     const reservation = newReservation[0];
 
-    // Send emails (non-blocking)
+    // Send emails — must await to prevent Lambda from terminating before emails are sent
     const emailData = {
       id: reservation.id,
       patientName: data.patientName,
       patientKana: data.patientKana,
       phone: data.phone,
-      email: data.email || null,
+      email: data.email,
       menuName: menu.name,
       menuCategory: MENU_CATEGORY_LABELS[menu.category as MenuCategory],
       reservationDate: data.reservationDate,
@@ -137,9 +137,16 @@ export async function POST(request: NextRequest) {
       symptoms: data.symptoms || null,
     };
 
-    // Send emails without waiting
-    sendClinicNotification(emailData).catch(console.error);
-    sendPatientConfirmation(emailData).catch(console.error);
+    // Send both emails in parallel but await completion to prevent Lambda early termination
+    const emailResults = await Promise.allSettled([
+      sendClinicNotification(emailData),
+      sendPatientConfirmation(emailData),
+    ]);
+    for (const result of emailResults) {
+      if (result.status === "rejected") {
+        console.error("Email send failed:", result.reason);
+      }
+    }
 
     return NextResponse.json({
       success: true,

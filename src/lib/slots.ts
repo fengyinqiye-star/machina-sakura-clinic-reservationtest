@@ -24,28 +24,35 @@ function generateTimeSlots(
   return slots;
 }
 
+interface StaffAvailabilityResult {
+  count: number; // -1 means fallback to schedules.maxSlots
+  names: string[];
+  staffDetails: { name: string; specialties: string | null }[];
+}
+
 /**
  * Count how many active practitioners are working at a given time slot
  * on a given date, using the staffSchedules table.
+ * Also returns the names and specialties of available staff.
  *
- * Returns 0 if no staff is available at that time.
- * Returns -1 if staff system is not configured (no staff OR no staffSchedules at all),
+ * Returns count=0 if no staff is available at that time.
+ * Returns count=-1 if staff system is not configured (no staff OR no staffSchedules at all),
  * signaling the caller should fall back to schedules.maxSlots.
  */
-async function getAvailableStaffCount(
+async function getAvailableStaffInfo(
   date: string,
   slotTime: string,
-): Promise<number> {
+): Promise<StaffAvailabilityResult> {
   const db = await getDbReady();
 
   // Get all active practitioners
   const activeStaff = await db
-    .select({ id: staff.id })
+    .select({ id: staff.id, name: staff.name, specialties: staff.specialties })
     .from(staff)
     .where(and(eq(staff.isActive, true), eq(staff.role, "practitioner")));
 
   if (activeStaff.length === 0) {
-    return -1; // No staff registered -> fallback
+    return { count: -1, names: [], staffDetails: [] }; // No staff registered -> fallback
   }
 
   const dateObj = new Date(date + "T00:00:00");
@@ -54,7 +61,8 @@ async function getAvailableStaffCount(
   const [slotH, slotM] = slotTime.split(":").map(Number);
   const slotMinutes = slotH * 60 + slotM;
 
-  let availableCount = 0;
+  const availableNames: string[] = [];
+  const availableDetails: { name: string; specialties: string | null }[] = [];
   let hasAnySchedule = false;
 
   for (const s of activeStaff) {
@@ -98,16 +106,74 @@ async function getAvailableStaffCount(
     });
 
     if (isWorking) {
-      availableCount++;
+      availableNames.push(s.name);
+      availableDetails.push({ name: s.name, specialties: s.specialties });
     }
   }
 
   // If staff exist but none have schedules at all -> fallback
   if (!hasAnySchedule) {
-    return -1;
+    return { count: -1, names: [], staffDetails: [] };
   }
 
-  return availableCount;
+  return { count: availableNames.length, names: availableNames, staffDetails: availableDetails };
+}
+
+/**
+ * Get all staff working on a given date (across all time slots).
+ * Used to display "today's staff" summary above the time slots.
+ */
+export async function getStaffForDate(
+  date: string,
+): Promise<{ name: string; specialties: string | null }[]> {
+  const db = await getDbReady();
+
+  const activeStaff = await db
+    .select({ id: staff.id, name: staff.name, specialties: staff.specialties })
+    .from(staff)
+    .where(and(eq(staff.isActive, true), eq(staff.role, "practitioner")));
+
+  if (activeStaff.length === 0) return [];
+
+  const dateObj = new Date(date + "T00:00:00");
+  const dayOfWeek = dateObj.getDay();
+
+  const workingStaff: { name: string; specialties: string | null }[] = [];
+
+  for (const s of activeStaff) {
+    let staffScheds = await db
+      .select()
+      .from(staffSchedules)
+      .where(
+        and(
+          eq(staffSchedules.staffId, s.id),
+          eq(staffSchedules.specificDate, date),
+        ),
+      );
+
+    if (staffScheds.length === 0) {
+      staffScheds = await db
+        .select()
+        .from(staffSchedules)
+        .where(
+          and(
+            eq(staffSchedules.staffId, s.id),
+            eq(staffSchedules.dayOfWeek, dayOfWeek),
+          ),
+        );
+    }
+
+    if (staffScheds.length === 0) continue;
+    if (staffScheds.some((ss) => ss.isOff)) continue;
+
+    // Staff has at least one non-off schedule for this date
+    const hasWorkingHours = staffScheds.some((ss) => !ss.isOff);
+    if (hasWorkingHours) {
+      workingStaff.push({ name: s.name, specialties: s.specialties });
+    }
+  }
+
+  return workingStaff;
 }
 
 export async function getAvailableSlots(
@@ -220,11 +286,11 @@ export async function getAvailableSlots(
   for (const time of uniqueSlotTimes) {
     const count = reservationCountMap.get(time) || 0;
 
-    // Get staff count for this specific time slot
-    const staffCount = await getAvailableStaffCount(date, time);
+    // Get staff info for this specific time slot
+    const staffInfo = await getAvailableStaffInfo(date, time);
 
     // Use staff count if available, otherwise fall back to schedules.maxSlots
-    const maxSlots = staffCount >= 0 ? staffCount : fallbackMaxSlots;
+    const maxSlots = staffInfo.count >= 0 ? staffInfo.count : fallbackMaxSlots;
 
     let available = count < maxSlots;
 
@@ -241,6 +307,7 @@ export async function getAvailableSlots(
       time,
       available,
       availableStaffCount: maxSlots,
+      availableStaffNames: staffInfo.names,
     });
   }
 
@@ -257,6 +324,6 @@ export async function getMaxSlotsForTime(
   fallbackMaxSlots: number,
 ): Promise<number> {
   await autoSeedStaffIfEmpty();
-  const staffCount = await getAvailableStaffCount(date, time);
-  return staffCount >= 0 ? staffCount : fallbackMaxSlots;
+  const staffInfo = await getAvailableStaffInfo(date, time);
+  return staffInfo.count >= 0 ? staffInfo.count : fallbackMaxSlots;
 }

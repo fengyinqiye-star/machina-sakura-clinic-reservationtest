@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAvailableSlots } from "@/lib/slots";
+import { getAvailableSlots, getStaffForDate } from "@/lib/slots";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -32,8 +32,11 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const result = await getAvailableSlots(date, menuId);
-    return NextResponse.json({ date, ...result });
+    const [result, staffForDate] = await Promise.all([
+      getAvailableSlots(date, menuId),
+      getStaffForDate(date),
+    ]);
+    return NextResponse.json({ date, ...result, staffForDate });
   } catch (error) {
     console.error("Failed to fetch available slots:", error);
     const message = error instanceof Error ? error.message : "空き枠の取得に失敗しました";

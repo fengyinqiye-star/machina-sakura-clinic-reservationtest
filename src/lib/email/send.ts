@@ -48,18 +48,23 @@ export async function sendClinicNotification(data: ReservationEmailData) {
 }
 
 export async function sendPatientConfirmation(data: ReservationEmailData) {
-  if (!data.email) return;
+  if (!data.email) {
+    console.warn("[sendPatientConfirmation] No email address provided, skipping. Data:", JSON.stringify({ id: data.id, patientName: data.patientName }));
+    return;
+  }
 
   const resend = getResend();
   if (!resend) {
-    console.warn("Resend API key not configured, skipping patient confirmation email");
+    console.warn("[sendPatientConfirmation] Resend API key not configured, skipping patient confirmation email");
     return;
   }
 
   const phone = CLINIC_INFO.phone;
 
+  console.log("[sendPatientConfirmation] Sending confirmation email to:", data.email, "for reservation:", data.id);
+
   try {
-    await resend.emails.send({
+    const result = await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL || "noreply@sakura-clinic.resend.dev",
       to: data.email,
       subject: `[${CLINIC_INFO.name}] ご予約を受け付けました`,
@@ -113,7 +118,8 @@ export async function sendPatientConfirmation(data: ReservationEmailData) {
         </div>
       `,
     });
+    console.log("[sendPatientConfirmation] Email sent successfully to:", data.email, "Result:", JSON.stringify(result));
   } catch (error) {
-    console.error("Failed to send patient confirmation email:", error);
+    console.error("[sendPatientConfirmation] Failed to send patient confirmation email to:", data.email, "Error:", error);
   }
 }

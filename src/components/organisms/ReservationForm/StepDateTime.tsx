@@ -6,6 +6,11 @@ import Calendar from "./Calendar";
 import TimeSlotButton from "@/components/molecules/TimeSlotButton";
 import type { TimeSlot } from "@/types";
 
+interface StaffForDate {
+  name: string;
+  specialties: string | null;
+}
+
 interface StepDateTimeProps {
   menuId: string;
   selectedDate: string | null;
@@ -29,6 +34,7 @@ export default function StepDateTime({
   const [isHoliday, setIsHoliday] = useState(false);
   const [loading, setLoading] = useState(false);
   const [holidays, setHolidays] = useState<string[]>([]);
+  const [staffForDate, setStaffForDate] = useState<StaffForDate[]>([]);
 
   useEffect(() => {
     if (!selectedDate) return;
@@ -38,6 +44,7 @@ export default function StepDateTime({
       .then((data) => {
         setSlots(data.slots || []);
         setIsHoliday(data.isHoliday || false);
+        setStaffForDate(data.staffForDate || []);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -61,6 +68,30 @@ export default function StepDateTime({
         holidays={holidays}
       />
 
+      {/* Staff for this date */}
+      {selectedDate && !loading && !isHoliday && staffForDate.length > 0 && (
+        <div className="mt-4 p-4 bg-sakura-50/50 rounded-lg border border-sakura-100">
+          <h4 className="text-sm font-semibold text-gray-700 mb-2">
+            この日の対応スタッフ
+          </h4>
+          <div className="flex flex-wrap gap-2">
+            {staffForDate.map((s) => (
+              <span
+                key={s.name}
+                className="inline-flex items-center gap-1 px-3 py-1.5 bg-white rounded-full text-sm border border-sakura-200 text-gray-700"
+              >
+                <span className="font-medium">{s.name}</span>
+                {s.specialties && (
+                  <span className="text-xs text-gray-400">
+                    ({s.specialties})
+                  </span>
+                )}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Time Slots */}
       {selectedDate && (
         <div className="mt-6">
@@ -82,6 +113,7 @@ export default function StepDateTime({
                     time={slot.time}
                     available={slot.available}
                     availableStaffCount={slot.availableStaffCount}
+                    availableStaffNames={slot.availableStaffNames}
                     selected={selectedTime === slot.time}
                     onClick={() => onSelectTime(slot.time)}
                   />
