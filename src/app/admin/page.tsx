@@ -137,7 +137,7 @@ export default function AdminDashboardPage() {
             </Card>
 
             {/* Quick Links */}
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
               <Link href="/admin/reservations">
                 <Card className="p-6 text-center cursor-pointer" hover>
                   <span className="text-2xl mb-2 inline-block">&#128197;</span>
@@ -160,6 +160,12 @@ export default function AdminDashboardPage() {
                 <Card className="p-6 text-center cursor-pointer" hover>
                   <span className="text-2xl mb-2 inline-block">&#128100;</span>
                   <p className="font-medium text-gray-800">スタッフ管理</p>
+                </Card>
+              </Link>
+              <Link href="/admin/attendance">
+                <Card className="p-6 text-center cursor-pointer" hover>
+                  <span className="text-2xl mb-2 inline-block">&#128338;</span>
+                  <p className="font-medium text-gray-800">勤怠管理</p>
                 </Card>
               </Link>
             </div>

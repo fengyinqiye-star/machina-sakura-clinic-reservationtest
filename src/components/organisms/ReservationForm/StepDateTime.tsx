@@ -58,7 +58,7 @@ export default function StepDateTime({
   return (
     <div className="space-y-6">
       <h3 className="font-serif text-xl font-bold text-gray-800">
-        Step 2: 日時を選択
+        Step 3: 日時を選択
       </h3>
 
       {/* Calendar */}

@@ -43,6 +43,7 @@ export default function AdminStaffPage() {
     name: "",
     role: "practitioner" as StaffRole,
     specialties: [] as string[],
+    profileImageUrl: "",
     color: "#f472b6",
     isActive: true,
     sortOrder: 0,
@@ -73,6 +74,7 @@ export default function AdminStaffPage() {
       name: "",
       role: "practitioner",
       specialties: [],
+      profileImageUrl: "",
       color: "#f472b6",
       isActive: true,
       sortOrder: 0,
@@ -92,6 +94,7 @@ export default function AdminStaffPage() {
       name: s.name,
       role: s.role as StaffRole,
       specialties,
+      profileImageUrl: s.profileImageUrl || "",
       color: s.color,
       isActive: s.isActive,
       sortOrder: s.sortOrder,
@@ -107,6 +110,7 @@ export default function AdminStaffPage() {
     const payload = {
       ...formData,
       specialties: JSON.stringify(formData.specialties),
+      profileImageUrl: formData.profileImageUrl || null,
     };
 
     const url = editingId ? `/api/admin/staff/${editingId}` : "/api/admin/staff";
@@ -209,6 +213,17 @@ export default function AdminStaffPage() {
                   />
                 </FormField>
               </div>
+
+              <FormField label="プロフィール画像URL">
+                <Input
+                  value={formData.profileImageUrl}
+                  onChange={(e) => setFormData((p) => ({ ...p, profileImageUrl: e.target.value }))}
+                  placeholder="https://example.com/photo.jpg"
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  正方形の画像を推奨（予約フォームに丸型で表示されます）
+                </p>
+              </FormField>
 
               <FormField label="得意分野">
                 <div className="flex flex-wrap gap-2">

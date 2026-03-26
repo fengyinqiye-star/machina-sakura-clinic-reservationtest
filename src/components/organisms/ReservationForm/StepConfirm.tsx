@@ -33,7 +33,7 @@ export default function StepConfirm({ data, onSubmit, onEditStep }: StepConfirmP
   return (
     <div className="space-y-6">
       <h3 className="font-serif text-xl font-bold text-gray-800">
-        Step 4: 予約内容の確認
+        Step 5: 予約内容の確認
       </h3>
 
       <div className="bg-sakura-50 rounded-xl p-6 space-y-4">
@@ -62,6 +62,25 @@ export default function StepConfirm({ data, onSubmit, onEditStep }: StepConfirmP
 
         <hr className="border-gray-200" />
 
+        {/* Staff */}
+        <div className="flex justify-between items-start">
+          <div>
+            <p className="text-xs text-gray-500">担当スタッフ</p>
+            <p className="font-medium text-gray-800">
+              {data.staffName || "指名なし"}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => onEditStep(2)}
+            className="text-sm text-sakura-500 hover:underline min-h-[44px] px-2"
+          >
+            修正
+          </button>
+        </div>
+
+        <hr className="border-gray-200" />
+
         {/* Date/Time */}
         <div className="flex justify-between items-start">
           <div>
@@ -72,7 +91,7 @@ export default function StepConfirm({ data, onSubmit, onEditStep }: StepConfirmP
           </div>
           <button
             type="button"
-            onClick={() => onEditStep(2)}
+            onClick={() => onEditStep(3)}
             className="text-sm text-sakura-500 hover:underline min-h-[44px] px-2"
           >
             修正
@@ -97,7 +116,7 @@ export default function StepConfirm({ data, onSubmit, onEditStep }: StepConfirmP
           </div>
           <button
             type="button"
-            onClick={() => onEditStep(3)}
+            onClick={() => onEditStep(4)}
             className="text-sm text-sakura-500 hover:underline min-h-[44px] px-2"
           >
             修正
@@ -131,7 +150,7 @@ export default function StepConfirm({ data, onSubmit, onEditStep }: StepConfirmP
       )}
 
       <div className="flex justify-between pt-4">
-        <Button variant="secondary" onClick={() => onEditStep(3)}>
+        <Button variant="secondary" onClick={() => onEditStep(4)}>
           戻る
         </Button>
         <Button

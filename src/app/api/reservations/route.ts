@@ -112,6 +112,7 @@ export async function POST(request: NextRequest) {
         phone: data.phone,
         email: data.email,
         menuId: data.menuId,
+        staffId: data.staffId || null,
         reservationDate: data.reservationDate,
         reservationTime: data.reservationTime,
         isFirstVisit: data.isFirstVisit,

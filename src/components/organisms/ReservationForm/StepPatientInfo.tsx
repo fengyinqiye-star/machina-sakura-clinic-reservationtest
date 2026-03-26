@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@/components/atoms/Button";
 import Input from "@/components/atoms/Input";
@@ -24,10 +24,14 @@ export default function StepPatientInfo({
     register,
     handleSubmit,
     watch,
+    control,
     formState: { errors },
   } = useForm<PatientInfoInput>({
     resolver: zodResolver(patientInfoSchema),
-    defaultValues,
+    defaultValues: {
+      ...defaultValues,
+      isFirstVisit: defaultValues.isFirstVisit ?? true,
+    },
   });
 
   const isFirstVisit = watch("isFirstVisit");
@@ -36,7 +40,7 @@ export default function StepPatientInfo({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <h3 className="font-serif text-xl font-bold text-gray-800">
-        Step 3: お客様情報の入力
+        Step 4: お客様情報の入力
       </h3>
 
       <FormField label="氏名" required htmlFor="patientName">
@@ -81,28 +85,34 @@ export default function StepPatientInfo({
       </FormField>
 
       <FormField label="来院歴" required>
-        <div className="flex gap-4">
-          <label className="flex items-center gap-2 cursor-pointer min-h-[44px]">
-            <input
-              type="radio"
-              value="true"
-              className="w-4 h-4 text-sakura-400"
-              {...register("isFirstVisit", { setValueAs: (v) => v === "true" })}
-              defaultChecked={defaultValues.isFirstVisit === true}
-            />
-            <span>初診（初めて）</span>
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer min-h-[44px]">
-            <input
-              type="radio"
-              value="false"
-              className="w-4 h-4 text-sakura-400"
-              {...register("isFirstVisit", { setValueAs: (v) => v === "true" })}
-              defaultChecked={defaultValues.isFirstVisit === false}
-            />
-            <span>再診</span>
-          </label>
-        </div>
+        <Controller
+          name="isFirstVisit"
+          control={control}
+          render={({ field }) => (
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer min-h-[44px]">
+                <input
+                  type="radio"
+                  name="isFirstVisit"
+                  checked={field.value === true}
+                  onChange={() => field.onChange(true)}
+                  className="w-4 h-4 text-sakura-400"
+                />
+                <span>初診（初めて）</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer min-h-[44px]">
+                <input
+                  type="radio"
+                  name="isFirstVisit"
+                  checked={field.value === false}
+                  onChange={() => field.onChange(false)}
+                  className="w-4 h-4 text-sakura-400"
+                />
+                <span>再診</span>
+              </label>
+            </div>
+          )}
+        />
       </FormField>
 
       {isFirstVisit && <FirstVisitNotice />}

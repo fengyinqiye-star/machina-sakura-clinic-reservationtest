@@ -6,6 +6,7 @@ export const staffSchema = z.object({
     errorMap: () => ({ message: "役割を選択してください" }),
   }),
   specialties: z.string().optional(),
+  profileImageUrl: z.string().url("有効なURLを入力してください").optional().or(z.literal("")).or(z.null()),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "有効なカラーコードを入力してください").default("#f472b6"),
   isActive: z.boolean().default(true),
   sortOrder: z.number().int().min(0).default(0),

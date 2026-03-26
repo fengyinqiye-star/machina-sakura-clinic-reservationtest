@@ -9,6 +9,7 @@ const navItems = [
   { href: "/admin/menu", label: "メニュー管理", icon: "\uD83D\uDCCB" },
   { href: "/admin/schedule", label: "営業日設定", icon: "\u23F0" },
   { href: "/admin/staff", label: "スタッフ管理", icon: "\uD83D\uDC64" },
+  { href: "/admin/attendance", label: "勤怠管理", icon: "\uD83D\uDD52" },
 ];
 
 export default function AdminSidebar() {

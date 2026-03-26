@@ -43,6 +43,8 @@ export interface ReservationFormData {
   category: string;
   duration: number;
   price: number;
+  staffId: string;
+  staffName: string;
   date: string;
   time: string;
   patientName: string;
@@ -68,6 +70,7 @@ export interface ReservationWithMenu {
   phone: string;
   email: string | null;
   menuId: string;
+  staffId: string | null;
   reservationDate: string;
   reservationTime: string;
   isFirstVisit: boolean;
@@ -80,6 +83,7 @@ export interface ReservationWithMenu {
   menuCategory?: MenuCategory;
   menuDuration?: number;
   menuPrice?: number;
+  staffName?: string | null;
 }
 
 export interface PaginatedResponse<T> {

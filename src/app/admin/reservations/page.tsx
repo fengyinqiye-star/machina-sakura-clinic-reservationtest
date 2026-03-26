@@ -85,11 +85,12 @@ function ReservationsContent() {
           ) : (
             <>
               {/* Header */}
-              <div className="hidden md:grid grid-cols-[120px_1fr_120px_140px_100px] gap-2 px-4 py-3 bg-gray-50 text-xs font-medium text-gray-500 border-b">
+              <div className="hidden md:grid grid-cols-[120px_1fr_100px_130px_100px_100px] gap-2 px-4 py-3 bg-gray-50 text-xs font-medium text-gray-500 border-b">
                 <span>予約日時</span>
                 <span>患者名</span>
-                <span>電話番号</span>
+                <span>担当</span>
                 <span>メニュー</span>
+                <span>電話番号</span>
                 <span>ステータス</span>
               </div>
 
@@ -101,15 +102,18 @@ function ReservationsContent() {
                   className="block hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
                 >
                   {/* Desktop */}
-                  <div className="hidden md:grid grid-cols-[120px_1fr_120px_140px_100px] gap-2 items-center px-4 py-3 text-sm">
+                  <div className="hidden md:grid grid-cols-[120px_1fr_100px_130px_100px_100px] gap-2 items-center px-4 py-3 text-sm">
                     <span className="text-gray-700">
                       {r.reservationDate}
                       <br />
                       <span className="text-gray-500">{r.reservationTime}</span>
                     </span>
                     <span className="text-gray-800 font-medium">{r.patientName}</span>
-                    <span className="text-gray-600">{r.phone}</span>
+                    <span className="text-gray-600 text-xs">
+                      {r.staffName || "指名なし"}
+                    </span>
                     <span className="text-gray-600">{r.menuName}</span>
+                    <span className="text-gray-600 text-xs">{r.phone}</span>
                     <Badge className={STATUS_COLORS[r.status]}>
                       {STATUS_LABELS[r.status]}
                     </Badge>
@@ -121,6 +125,9 @@ function ReservationsContent() {
                       <p className="text-sm text-gray-500">
                         {r.reservationDate} {r.reservationTime} - {r.menuName}
                       </p>
+                      {r.staffName && (
+                        <p className="text-xs text-gray-400">担当: {r.staffName}</p>
+                      )}
                     </div>
                     <Badge className={STATUS_COLORS[r.status]}>
                       {STATUS_LABELS[r.status]}

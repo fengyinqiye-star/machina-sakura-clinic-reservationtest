@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { reservations, menus } from "@/db/schema";
+import { reservations, menus, staff } from "@/db/schema";
 import { eq, and, gte, lte, sql, desc } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
 
@@ -43,6 +43,7 @@ export async function GET(request: NextRequest) {
       .select({ count: sql<number>`count(*)` })
       .from(reservations)
       .leftJoin(menus, eq(reservations.menuId, menus.id))
+      .leftJoin(staff, eq(reservations.staffId, staff.id))
       .where(whereClause);
     const total = totalResult[0]?.count || 0;
 
@@ -55,6 +56,7 @@ export async function GET(request: NextRequest) {
         phone: reservations.phone,
         email: reservations.email,
         menuId: reservations.menuId,
+        staffId: reservations.staffId,
         reservationDate: reservations.reservationDate,
         reservationTime: reservations.reservationTime,
         isFirstVisit: reservations.isFirstVisit,
@@ -65,9 +67,11 @@ export async function GET(request: NextRequest) {
         updatedAt: reservations.updatedAt,
         menuName: menus.name,
         menuCategory: menus.category,
+        staffName: staff.name,
       })
       .from(reservations)
       .leftJoin(menus, eq(reservations.menuId, menus.id))
+      .leftJoin(staff, eq(reservations.staffId, staff.id))
       .where(whereClause)
       .orderBy(desc(reservations.reservationDate), desc(reservations.reservationTime))
       .limit(limit)

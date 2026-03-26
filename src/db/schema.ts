@@ -34,6 +34,7 @@ export const reservations = sqliteTable("reservations", {
   menuId: text("menu_id")
     .notNull()
     .references(() => menus.id),
+  staffId: text("staff_id"),
   reservationDate: text("reservation_date").notNull(),
   reservationTime: text("reservation_time").notNull(),
   isFirstVisit: integer("is_first_visit", { mode: "boolean" }).notNull(),
@@ -89,6 +90,7 @@ export const staff = sqliteTable("staff", {
     .notNull()
     .default("practitioner"),
   specialties: text("specialties"),
+  profileImageUrl: text("profile_image_url"),
   color: text("color").notNull().default("#f472b6"),
   isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
   sortOrder: integer("sort_order").notNull().default(0),
@@ -120,7 +122,29 @@ export const staffSchedules = sqliteTable("staff_schedules", {
     .default(sql`(datetime('now'))`),
 });
 
+export const attendance = sqliteTable("attendance", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  staffId: text("staff_id")
+    .notNull()
+    .references(() => staff.id),
+  date: text("date").notNull(),
+  clockIn: text("clock_in"),
+  clockOut: text("clock_out"),
+  breakMinutes: integer("break_minutes").notNull().default(0),
+  note: text("note"),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(datetime('now'))`),
+  updatedAt: text("updated_at")
+    .notNull()
+    .default(sql`(datetime('now'))`),
+});
+
 export type Staff = typeof staff.$inferSelect;
 export type NewStaff = typeof staff.$inferInsert;
 export type StaffSchedule = typeof staffSchedules.$inferSelect;
 export type NewStaffSchedule = typeof staffSchedules.$inferInsert;
+export type Attendance = typeof attendance.$inferSelect;
+export type NewAttendance = typeof attendance.$inferInsert;

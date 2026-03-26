@@ -47,6 +47,7 @@ async function initLocalDb(db: DrizzleDb): Promise<void> {
       phone TEXT NOT NULL,
       email TEXT,
       menu_id TEXT NOT NULL REFERENCES menus(id),
+      staff_id TEXT,
       reservation_date TEXT NOT NULL,
       reservation_time TEXT NOT NULL,
       is_first_visit INTEGER NOT NULL,
@@ -73,6 +74,7 @@ async function initLocalDb(db: DrizzleDb): Promise<void> {
       name TEXT NOT NULL,
       role TEXT NOT NULL DEFAULT 'practitioner',
       specialties TEXT,
+      profile_image_url TEXT,
       color TEXT NOT NULL DEFAULT '#f472b6',
       is_active INTEGER NOT NULL DEFAULT 1,
       sort_order INTEGER NOT NULL DEFAULT 0,
@@ -87,6 +89,17 @@ async function initLocalDb(db: DrizzleDb): Promise<void> {
       start_time TEXT NOT NULL,
       end_time TEXT NOT NULL,
       is_off INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE TABLE IF NOT EXISTS attendance (
+      id TEXT PRIMARY KEY,
+      staff_id TEXT NOT NULL REFERENCES staff(id),
+      date TEXT NOT NULL,
+      clock_in TEXT,
+      clock_out TEXT,
+      break_minutes INTEGER NOT NULL DEFAULT 0,
+      note TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
