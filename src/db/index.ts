@@ -104,6 +104,21 @@ async function initLocalDb(db: DrizzleDb): Promise<void> {
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
+
+  // Migrate existing tables: add columns that may be missing from older schemas.
+  // SQLite doesn't support ADD COLUMN IF NOT EXISTS, so we catch and ignore errors.
+  const migrations: string[] = [
+    `ALTER TABLE staff ADD COLUMN profile_image_url TEXT`,
+  ];
+  for (const migrationSql of migrations) {
+    try {
+      await client.execute(migrationSql);
+      console.warn(`[db] Migration applied: ${migrationSql}`);
+    } catch {
+      // Column already exists — ignore
+    }
+  }
+
   const mode = process.env.TURSO_DATABASE_URL ? "Turso" : "local SQLite";
   console.warn(`[db] Tables created (${mode})`);
 }
