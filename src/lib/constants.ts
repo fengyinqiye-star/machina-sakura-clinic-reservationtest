@@ -7,7 +7,7 @@ export const CLINIC_INFO = {
   email: "info@sakura-clinic.example",
   description:
     "さくら鍼灸整骨院は、鍼灸・整体・マッサージで皆さまの健康をサポートします。丁寧なカウンセリングと国家資格を持つスタッフによる安心の施術をお届けします。",
-  catchphrase: "あなたの健康に、やさしい手を。",
+  catchphrase: "かんたん予約、スムーズな体験",
   nearestStation: "JR渋谷駅 南口より徒歩5分",
   parking: "近隣にコインパーキングあり（院提携駐車場はございません）",
   businessHours: {
